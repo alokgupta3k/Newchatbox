@@ -2,104 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
   <style>
-    body {margin:0;font-family:Arial, sans-serif;background:#f3f4f6;}
-    .container {padding:20px;}
-    
-    h1 {text-align:center;margin:20px 0;color:#1f2937;}
-    
-    table {width:100%;border-collapse:collapse;margin-top:20px;}
-    table, th, td {border:1px solid #ccc;}
-    th, td {padding:10px;text-align:center;}
-    th {background:#4f46e5;color:white;}
-    tr:nth-child(even){background:#f9f9f9;}
-    
-    button {
-      padding:8px 12px;
-      background:#ef4444;
-      color:white;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
     }
-    button:hover {background:#dc2626;}
-    
-    .logout {
-      display:block;
-      margin:20px auto;
-      padding:10px 16px;
-      background:#4f46e5;
-      border-radius:8px;
+    header {
+      padding: 15px;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: #fff;
+      color: #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #667eea;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+    .edit-btn {
+      padding: 5px 10px;
+      background: #764ba2;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+    .edit-btn:hover {
+      background: #563c91;
     }
   </style>
 </head>
 <body>
+  <header>⚙️ Admin Panel</header>
   <div class="container">
-    <h1>⚙️ Admin Panel</h1>
-    <p style="text-align:center;">Welcome, <b id="adminName"></b></p>
-
-    <table>
+    <h2>Registered Users</h2>
+    <table id="usersTable">
       <thead>
         <tr>
           <th>Username</th>
-          <th>Password</th>
+          <th>Last Online</th>
           <th>Coins</th>
-          <th>Action</th>
+          <th>Edit</th>
         </tr>
       </thead>
-      <tbody id="userTable"></tbody>
+      <tbody></tbody>
     </table>
-
-    <button class="logout" onclick="logout()">Logout</button>
   </div>
 
-<script>
-  // Load Users
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  let currentUser = localStorage.getItem("currentUser");
+  <script>
+    function loadUsers() {
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      let tableBody = document.querySelector("#usersTable tbody");
+      tableBody.innerHTML = "";
 
-  // Check if admin
-  if(currentUser !== "admin"){
-    alert("⛔ Access Denied! Only admin can open this page.");
-    window.location.href="index.html";
-  } else {
-    document.getElementById("adminName").innerText = currentUser;
-  }
-
-  // Show all users
-  function loadUsers(){
-    let tbody=document.getElementById("userTable");
-    tbody.innerHTML="";
-    users.forEach((u,i)=>{
-      tbody.innerHTML+=`
-        <tr>
-          <td>${u.user}</td>
-          <td>${u.pass}</td>
-          <td>${u.coins}</td>
-          <td><button onclick="deleteUser(${i})">Delete</button></td>
-        </tr>`;
-    });
-  }
-
-  // Delete User
-  function deleteUser(i){
-    if(users[i].user==="admin"){alert("⚠️ You cannot delete admin!");return;}
-    if(confirm("Are you sure to delete "+users[i].user+" ?")){
-      users.splice(i,1);
-      localStorage.setItem("users",JSON.stringify(users));
-      loadUsers();
+      users.forEach((user, index) => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.lastOnline || "N/A"}</td>
+          <td>${user.coins || 0}</td>
+          <td><button class="edit-btn" onclick="editCoins(${index})">Edit</button></td>
+        `;
+        tableBody.appendChild(tr);
+      });
     }
-  }
 
-  // Logout
-  function logout(){
-    localStorage.removeItem("currentUser");
-    window.location.href="index.html";
-  }
+    function editCoins(index) {
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      let newCoins = prompt("Enter new coin value:", users[index].coins || 0);
+      if(newCoins !== null) {
+        users[index].coins = parseInt(newCoins);
+        localStorage.setItem("users", JSON.stringify(users));
+        loadUsers();
+      }
+    }
 
-  loadUsers();
-</script>
+    window.onload = loadUsers;
+  </script>
 </body>
 </html>
