@@ -9,99 +9,75 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, #6dd5fa, #2980b9);
       color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
+
     header {
+      width: 100%;
+      background: #1a252f;
       padding: 15px;
       text-align: center;
-      background: rgba(0,0,0,0.3);
       font-size: 22px;
       font-weight: bold;
     }
+
     .container {
+      flex: 1;
+      width: 90%;
+      max-width: 800px;
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
       padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      background: #fff;
-      color: #333;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
+
+    h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
-    th {
-      background: #667eea;
-      color: #fff;
+
+    .card {
+      background: #34495e;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      transition: 0.3s;
     }
-    tr:nth-child(even) {
-      background: #f2f2f2;
+
+    .card:hover {
+      background: #2ecc71;
+      transform: scale(1.05);
     }
-    .edit-btn {
-      padding: 5px 10px;
-      background: #764ba2;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      cursor: pointer;
-    }
-    .edit-btn:hover {
-      background: #563c91;
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #1a252f;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
     }
   </style>
 </head>
 <body>
-  <header>⚙️ Admin Panel</header>
+  <header>Admin Panel</header>
+
   <div class="container">
-    <h2>Registered Users</h2>
-    <table id="usersTable">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Last Online</th>
-          <th>Coins</th>
-          <th>Edit</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <h2>Welcome to Admin Dashboard</h2>
+    <div class="card">📊 User Statistics</div>
+    <div class="card">💰 Earnings Report</div>
+    <div class="card">⚙️ Settings</div>
+    <div class="card">📨 Messages</div>
   </div>
 
-  <script>
-    function loadUsers() {
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      let tableBody = document.querySelector("#usersTable tbody");
-      tableBody.innerHTML = "";
-
-      users.forEach((user, index) => {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${user.username}</td>
-          <td>${user.lastOnline || "N/A"}</td>
-          <td>${user.coins || 0}</td>
-          <td><button class="edit-btn" onclick="editCoins(${index})">Edit</button></td>
-        `;
-        tableBody.appendChild(tr);
-      });
-    }
-
-    function editCoins(index) {
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      let newCoins = prompt("Enter new coin value:", users[index].coins || 0);
-      if(newCoins !== null) {
-        users[index].coins = parseInt(newCoins);
-        localStorage.setItem("users", JSON.stringify(users));
-        loadUsers();
-      }
-    }
-
-    window.onload = loadUsers;
-  </script>
+  <footer>
+    © 2025 Admin Panel
+  </footer>
 </body>
 </html>
