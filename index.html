@@ -5,127 +5,101 @@
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {margin:0;font-family:Arial, sans-serif;background:#f3f4f6;display:flex;min-height:100vh;}
-
-    /* Sidebar */
-    .sidebar {
-      width:220px;background:#1f2937;color:white;display:flex;flex-direction:column;align-items:center;
-      padding:20px 0;transition:all 0.3s ease;
+    body {margin:0;font-family:Arial, sans-serif;background:#f3f4f6;}
+    .container {padding:20px;}
+    
+    h1 {text-align:center;margin:20px 0;color:#1f2937;}
+    
+    table {width:100%;border-collapse:collapse;margin-top:20px;}
+    table, th, td {border:1px solid #ccc;}
+    th, td {padding:10px;text-align:center;}
+    th {background:#4f46e5;color:white;}
+    tr:nth-child(even){background:#f9f9f9;}
+    
+    button {
+      padding:8px 12px;
+      background:#ef4444;
+      color:white;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
     }
-    .sidebar h2 {margin-bottom:20px;font-size:20px;}
-    .sidebar button {
-      width:180px;padding:12px;margin:6px 0;background:#374151;color:white;border:none;border-radius:8px;
-      cursor:pointer;font-size:15px;transition:0.3s;
-    }
-    .sidebar button:hover {background:#4b5563;}
-
-    /* Main */
-    .main {flex:1;padding:20px;overflow-y:auto;}
-    .card {
-      background:white;padding:20px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,0.15);margin-bottom:20px;
-    }
-    h3 {margin-top:0;}
-    .stats {display:flex;gap:20px;flex-wrap:wrap;}
-    .statBox {
-      flex:1;min-width:200px;background:#4f46e5;color:white;padding:20px;border-radius:12px;text-align:center;
-      font-size:18px;
-    }
-    canvas {max-width:100%;}
-
-    /* Mobile Responsive */
-    @media(max-width:768px){
-      body {flex-direction:column;}
-      .sidebar {width:100%;flex-direction:row;overflow-x:auto;justify-content:center;}
-      .sidebar h2 {display:none;}
-      .sidebar button {flex:1;min-width:auto;padding:10px;font-size:14px;}
-      .stats {flex-direction:column;}
-      .statBox {min-width:100%;font-size:16px;}
+    button:hover {background:#dc2626;}
+    
+    .logout {
+      display:block;
+      margin:20px auto;
+      padding:10px 16px;
+      background:#4f46e5;
+      border-radius:8px;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>⚙️ Admin Panel</h1>
+    <p style="text-align:center;">Welcome, <b id="adminName"></b></p>
 
-  <div class="sidebar">
-    <h2>Admin</h2>
-    <button onclick="showPage('dashboard')">Dashboard</button>
-    <button onclick="showPage('users')">Users</button>
-    <button onclick="showPage('earnings')">Earnings</button>
-    <button onclick="showPage('settings')">Settings</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Password</th>
+          <th>Coins</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+
+    <button class="logout" onclick="logout()">Logout</button>
   </div>
 
-  <div class="main">
-    <!-- Dashboard -->
-    <div id="dashboard" class="card">
-      <h3> Dashboard</h3>
-      <div class="stats">
-        <div class="statBox">Users<br><b id="totalUsers">0</b></div>
-        <div class="statBox">Earnings<br><b id="totalEarnings">0</b></div>
-        <div class="statBox">Active Today<br><b id="activeUsers">0</b></div>
-      </div>
-      <canvas id="chart" height="120"></canvas>
-    </div>
+<script>
+  // Load Users
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let currentUser = localStorage.getItem("currentUser");
 
-    <!-- Users -->
-    <div id="users" class="card" style="display:none;">
-      <h3> All Users</h3>
-      <ul id="userList"></ul>
-    </div>
+  // Check if admin
+  if(currentUser !== "admin"){
+    alert("⛔ Access Denied! Only admin can open this page.");
+    window.location.href="index.html";
+  } else {
+    document.getElementById("adminName").innerText = currentUser;
+  }
 
-    <!-- Earnings -->
-    <div id="earnings" class="card" style="display:none;">
-      <h3> Earnings</h3>
-      <p>Monthly Earnings Report</p>
-      <canvas id="earnChart" height="120"></canvas>
-    </div>
-
-    <!-- Settings -->
-    <div id="settings" class="card" style="display:none;">
-      <h3> Settings</h3>
-      <p>Coming Soon...</p>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Dummy data for users
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    document.getElementById("totalUsers").innerText = users.length;
-    document.getElementById("activeUsers").innerText = Math.floor(users.length/2);
-    document.getElementById("totalEarnings").innerText = users.length * 50;
-
-    // Show Users
-    let userList=document.getElementById("userList");
-    users.forEach(u=>{
-      let li=document.createElement("li");
-      li.textContent=u.name+" - "+u.email+" (Coins: "+(u.coins||0)+")";
-      userList.appendChild(li);
+  // Show all users
+  function loadUsers(){
+    let tbody=document.getElementById("userTable");
+    tbody.innerHTML="";
+    users.forEach((u,i)=>{
+      tbody.innerHTML+=`
+        <tr>
+          <td>${u.user}</td>
+          <td>${u.pass}</td>
+          <td>${u.coins}</td>
+          <td><button onclick="deleteUser(${i})">Delete</button></td>
+        </tr>`;
     });
+  }
 
-    // Chart.js Example
-    const ctx=document.getElementById('chart');
-    new Chart(ctx,{
-      type:'line',
-      data:{
-        labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        datasets:[{label:'Active Users',data:[5,9,7,12,8,15,10],borderColor:'#4f46e5',fill:false,tension:0.4}]
-      }
-    });
-
-    const ectx=document.getElementById('earnChart');
-    new Chart(ectx,{
-      type:'bar',
-      data:{
-        labels:['Jan','Feb','Mar','Apr','May','Jun'],
-        datasets:[{label:'Earnings ()',data:[500,700,650,800,900,750],backgroundColor:'#10b981'}]
-      }
-    });
-
-    // Page switch
-    function showPage(page){
-      document.querySelectorAll('.card').forEach(c=>c.style.display="none");
-      document.getElementById(page).style.display="block";
+  // Delete User
+  function deleteUser(i){
+    if(users[i].user==="admin"){alert("⚠️ You cannot delete admin!");return;}
+    if(confirm("Are you sure to delete "+users[i].user+" ?")){
+      users.splice(i,1);
+      localStorage.setItem("users",JSON.stringify(users));
+      loadUsers();
     }
-  </script>
+  }
 
+  // Logout
+  function logout(){
+    localStorage.removeItem("currentUser");
+    window.location.href="index.html";
+  }
+
+  loadUsers();
+</script>
 </body>
 </html>
